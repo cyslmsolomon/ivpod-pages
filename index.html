@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>面试 ASR 助手 · 知识点精讲</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+    background:radial-gradient(circle at 25% 0%,#1a1033 0%,#0a0a18 55%);
+    color:#e2e8f0;min-height:100vh;display:flex;justify-content:center;
+    padding:40px 18px 60px;-webkit-font-smoothing:antialiased}
+  .wrap{width:100%;max-width:760px}
+  .tag{display:inline-block;font-size:12px;letter-spacing:.12em;color:#c084fc;
+    border:1px solid #7c3aed55;background:#4c1d9533;padding:5px 12px;border-radius:999px;margin-bottom:18px}
+  h1{font-size:27px;line-height:1.35;font-weight:700}
+  .sub{color:#94a3b8;margin-top:10px;font-size:15px;line-height:1.75}
+  .bar{display:flex;gap:8px;align-items:center;margin-top:18px;flex-wrap:wrap}
+  .cb{font-family:inherit;font-size:13px;font-weight:600;color:#cbd5e1;background:#241f3a;
+    border:1px solid #2f2849;border-radius:9px;padding:8px 14px;cursor:pointer;text-decoration:none}
+  .cb:hover{background:#2f2849;color:#e9d5ff}
+  .cb.on{background:#7c3aed;color:#fff;border-color:#7c3aed}
+  h2{font-size:13px;letter-spacing:.1em;color:#64748b;margin:30px 0 10px;font-weight:600}
+  .ep{display:block;text-decoration:none;background:#12101f;border:1px solid #241f3a;
+    border-radius:14px;padding:16px 18px;margin-bottom:10px;transition:.15s}
+  .ep:hover{border-color:#7c3aed66;transform:translateY(-1px)}
+  .ep .no{font-size:12px;color:#c084fc;letter-spacing:.08em}
+  .ep .t{font-size:17px;color:#e9d5ff;font-weight:600;margin-top:4px}
+  .ep .d{font-size:13px;color:#94a3b8;margin-top:6px;line-height:1.6}
+  .ep .m{margin-top:8px;font-size:12px;color:#475569;font-variant-numeric:tabular-nums}
+  .pending{background:transparent;border-style:dashed;cursor:default}
+  .pending:hover{transform:none;border-color:#241f3a}
+  footer{margin-top:34px;padding-top:18px;border-top:1px solid #241f3a;
+    font-size:12.5px;color:#475569;line-height:1.9}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <span class="tag">面试 ASR 助手 · 知识点精讲</span>
+  <h1>面试 ASR 助手 · 知识点精讲</h1>
+  <p class="sub">把项目里用过的知识、踩过的坑、测过的数字，讲成面试官爱听的十几分钟。</p>
+  <div class="bar">
+    <button class="cb" id="resumeBtn">继续上次的</button>
+    <span style="font-size:12.5px;color:#64748b">已上线 10 期 · 共 10 期 · 更新于 2026-10-10 22:25</span>
+  </div>
+
+  <h2>已上线</h2>
+  <div>    <a class="ep" href="e01.html">
+      <div class="no">E01 · 系列第 1 期</div>
+      <div class="t">项目全景：把复杂系统讲成一个故事</div>
+      <div class="d">架构叙事、SLA 口径、复盘结构</div>
+      <div class="m">13:29</div>
+    </a>
+    <a class="ep" href="e02.html">
+      <div class="no">E02 · 系列第 8 期</div>
+      <div class="t">会话管理与一次真实事故</div>
+      <div class="d">conversation_id、按 key 隔离、404 自愈，以及整场空答案那一夜</div>
+      <div class="m">9:45</div>
+    </a>
+    <a class="ep" href="e03.html">
+      <div class="no">E03 · 系列第 5 期</div>
+      <div class="t">ASR 引擎选型与兜底链</div>
+      <div class="d">CER 与 P50 定稿延迟怎么测，selected 与 active 为什么必须是两个状态</div>
+      <div class="m">16:39</div>
+    </a>
+    <a class="ep" href="e04.html">
+      <div class="no">E04 · 系列第 6 期</div>
+      <div class="t">流式延迟预算</div>
+      <div class="d">TTFT、真流式判据、骨架占位、垫场语，以及首音与垫场为什么要拆成两个指标</div>
+      <div class="m">10:15</div>
+    </a>
+    <a class="ep" href="e05.html">
+      <div class="no">E05 · 系列第 4 期</div>
+      <div class="t">回声自激与半双工门控</div>
+      <div class="d">Jaccard 与覆盖率之争，以及麦克风输入模式为什么要默认关</div>
+      <div class="m">8:20</div>
+    </a>
+    <a class="ep" href="e06.html">
+      <div class="no">E06 · 系列第 9 期</div>
+      <div class="t">出口守卫与防御性设计</div>
+      <div class="d">A1 到 A8 每一道卡为什么存在，以及宁缺毋滥的触发哲学</div>
+      <div class="m">9:31</div>
+    </a>
+    <a class="ep" href="e07.html">
+      <div class="no">E07 · 系列第 7 期</div>
+      <div class="t">RAG 与知识库治理</div>
+      <div class="d">冷态 9 秒到稳态 0.09 秒、KB 零段红标，以及清洗铁律</div>
+      <div class="m">8:23</div>
+    </a>
+    <a class="ep" href="e08.html">
+      <div class="no">E08 · 系列第 2 期</div>
+      <div class="t">浏览器音频采集与双通道分离</div>
+      <div class="d">说话人分离为什么放在采集层而不是算法层</div>
+      <div class="m">6:44</div>
+    </a>
+    <a class="ep" href="e09.html">
+      <div class="no">E09 · 系列第 3 期</div>
+      <div class="t">VAD 断句与音频秒</div>
+      <div class="d">能量 VAD、端点阈值，以及为什么断句要按喂入样本计时</div>
+      <div class="m">7:12</div>
+    </a>
+    <a class="ep" href="e10.html">
+      <div class="no">E10 · 系列第 10 期</div>
+      <div class="t">数据分层、观测与隐私</div>
+      <div class="d">raw 只追加、clean 可重跑、kb 人工确认，以及零认证网关的挂载决策</div>
+      <div class="m">7:28</div>
+    </a></div>
+
+  <footer>
+    音频托管在 Cloudflare R2，页面与字幕同源，点开即听 · 单文件页面可直接转发<br>
+    第 1 期「项目全景」为流水线建立前的手工成品，已重制为外链版
+  </footer>
+</div>
+<script>
+(function () {
+  var btn = document.getElementById('resumeBtn');
+  var last = '';
+  try { last = localStorage.getItem('iv_last_ep') || ''; } catch (e) {}
+  if (!last) { btn.disabled = true; btn.textContent = '还没有收听记录'; return; }
+  btn.textContent = '继续听 ' + last.toUpperCase();
+  btn.onclick = function () { location.href = last + '.html'; };
+})();
+</script>
+</body>
+</html>

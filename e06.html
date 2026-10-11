@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>E06 · 出口守卫与防御性设计</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+    background:radial-gradient(circle at 25% 0%,#1a1033 0%,#0a0a18 55%);
+    color:#e2e8f0;min-height:100vh;
+    display:flex;justify-content:center;padding:40px 18px 60px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{width:100%;max-width:720px}
+  .tag{
+    display:inline-block;font-size:12px;letter-spacing:.12em;
+    color:#c084fc;border:1px solid #7c3aed55;background:#4c1d9533;
+    padding:5px 12px;border-radius:999px;margin-bottom:20px;
+  }
+  h1{font-size:28px;line-height:1.35;font-weight:700;letter-spacing:-.01em}
+  .sub{color:#94a3b8;margin-top:12px;font-size:15px;line-height:1.75}
+  .meta{display:flex;gap:20px;margin-top:20px;font-size:13px;color:#64748b;flex-wrap:wrap}
+  .meta b{color:#cbd5e1;font-weight:600}
+  .player{
+    margin-top:26px;background:#12101f;border:1px solid #241f3a;
+    border-radius:16px;padding:20px;box-shadow:0 20px 50px -20px #000c;
+  }
+  audio{width:100%;display:block}
+  #live{
+    margin-top:14px;min-height:44px;font-size:15px;line-height:1.6;color:#e9d5ff;
+    background:#0d0b18;border:1px solid #241f3a;border-radius:10px;padding:10px 14px;
+  }
+  .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+  .btn{
+    flex:1;min-width:130px;text-align:center;text-decoration:none;
+    padding:11px 16px;border-radius:10px;font-size:14px;font-weight:600;
+    background:#7c3aed;color:#fff;transition:.18s;border:none;cursor:pointer;
+    font-family:inherit;display:inline-block;
+  }
+  .btn:hover{background:#8b5cf6;transform:translateY(-1px)}
+  .btn.ghost{background:#241f3a;color:#cbd5e1}
+  .btn.ghost:hover{background:#2f2849}
+  h2{font-size:13px;letter-spacing:.1em;color:#64748b;margin:34px 0 12px;font-weight:600}
+  .ch{display:flex;align-items:baseline;gap:14px;padding:12px 14px;border-radius:10px;
+      cursor:pointer;transition:.15s;border:1px solid transparent}
+  .ch:hover{background:#12101f;border-color:#241f3a}
+  .ch .t{font-variant-numeric:tabular-nums;color:#c084fc;font-size:13px;font-weight:600;min-width:44px}
+  .ch .n{font-size:15px;color:#cbd5e1}
+  .ch .d{margin-left:auto;font-size:12px;color:#475569}
+  details{margin-top:8px}
+  summary{cursor:pointer;font-size:13px;color:#64748b;padding:6px 2px;user-select:none}
+  summary:hover{color:#94a3b8}
+  .cue{padding:7px 14px;font-size:14px;line-height:1.7;color:#94a3b8;cursor:pointer;border-radius:8px}
+  .cue:hover{background:#12101f;color:#cbd5e1}
+  .cue.on{color:#e9d5ff;background:#1a1033}
+  .cue .ct{font-variant-numeric:tabular-nums;font-size:12px;color:#7c3aed;margin-right:10px}
+  .ctl{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}
+  .cb{
+    font-family:inherit;font-size:13px;font-weight:600;color:#cbd5e1;
+    background:#241f3a;border:1px solid #2f2849;border-radius:9px;
+    padding:7px 12px;cursor:pointer;text-decoration:none;transition:.15s;
+  }
+  .cb:hover{background:#2f2849;color:#e9d5ff}
+  .cb:disabled{opacity:.35;cursor:default}
+  .cb.on{background:#4c1d95;color:#fff;border-color:#7c3aed}
+  #bgmVol{width:88px;accent-color:#7c3aed;vertical-align:middle}
+  .ctl .sp{flex:1}
+  .ctl .lbl{font-size:12px;color:#64748b}
+  .seg{display:inline-flex;border:1px solid #2f2849;border-radius:9px;overflow:hidden}
+  .seg button{
+    font-family:inherit;font-size:12.5px;font-weight:600;color:#94a3b8;
+    background:#241f3a;border:none;padding:7px 10px;cursor:pointer;transition:.15s;
+  }
+  .seg button + button{border-left:1px solid #2f2849}
+  .seg button:hover{color:#e9d5ff;background:#2f2849}
+  .seg button.on{background:#4c1d95;color:#fff}
+  footer{margin-top:38px;padding-top:20px;border-top:1px solid #241f3a;
+         font-size:12.5px;color:#475569;line-height:1.9}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <span class="tag">面试 ASR 助手 · 知识点精讲</span>
+  <h1>E06 · 出口守卫与防御性设计</h1>
+  <p class="sub">系列第 9 期 · A1 到 A8 每一道卡为什么存在，以及宁缺毋滥的触发哲学</p>
+
+  <div class="meta">
+    <span>时长 <b>9:30</b></span>
+    <span>音色 <b>云健 · 男声</b></span>
+    <span>章节 <b>9</b></span>
+    <span>字幕 <b>90 条</b></span>
+  </div>
+
+  <div class="player">
+    <audio id="au" controls preload="auto"></audio>
+    <div id="live">正在解码音频…</div>
+    <div class="actions">
+      <button class="btn" id="dl">下载 / 保存音频</button>
+      <button class="btn ghost" id="dlsrt">下载字幕 SRT</button>
+    </div>
+
+    <div class="ctl" id="ctl">
+      <button class="cb" id="rateBtn" title="播放速度">1.0×</button>
+      <button class="cb" id="prevBtn" title="上一期">← 上一期</button>
+      <button class="cb" id="nextBtn" title="下一期">下一期 →</button>
+      <span class="lbl">播完后</span>
+      <span class="seg" id="ivMode">
+        <button data-m="loop">循环本集</button>
+        <button data-m="next">自动下一期</button>
+        <button data-m="none">不做处理</button>
+      </span>
+      <span class="sp"></span>
+      <a class="cb" id="idxBtn" href="index.html">目录</a>
+      <span id="bgmWrap" style="display:none;align-items:center;gap:8px">
+        <button class="cb" id="bgmBtn">♪ 敲敲鱼</button>
+        <span class="seg" id="bgmSnd"><button data-s="bgm-woodfish-01.wav">01</button><button data-s="bgm-woodfish-03.wav">03</button><button data-s="bgm-woodfish-06.wav">06</button></span>
+        <input type="range" id="bgmVol" min="0" max="100" value="35" title="配乐音量">
+        <audio id="ivBgmAu" loop preload="auto" src="bgm-woodfish-01.wav"></audio>
+      </span>
+    </div>
+  </div>
+
+  <h2>章节导航（点击跳转）</h2>
+  <div id="chapters">
+    <div class="ch" data-t="0.1"><span class="t">0:00</span><span class="n">片头</span><span class="d">0:42</span></div>
+    <div class="ch" data-t="42.4"><span class="t">0:42</span><span class="n">第一章 为什么出口需要守卫</span><span class="d">1:05</span></div>
+    <div class="ch" data-t="107.9"><span class="t">1:47</span><span class="n">第二章 A 一，元话语拦截</span><span class="d">0:55</span></div>
+    <div class="ch" data-t="163.7"><span class="t">2:43</span><span class="n">第三章 A 四，篇幅收口与那次星号事故</span><span class="d">1:43</span></div>
+    <div class="ch" data-t="266.9"><span class="t">4:26</span><span class="n">第四章 什么时候不该答</span><span class="d">1:24</span></div>
+    <div class="ch" data-t="351.0"><span class="t">5:50</span><span class="n">第五章 A 七，被打断之后</span><span class="d">0:44</span></div>
+    <div class="ch" data-t="395.6"><span class="t">6:35</span><span class="n">第六章 协议增量与可观测性</span><span class="d">1:07</span></div>
+    <div class="ch" data-t="463.3"><span class="t">7:43</span><span class="n">第七章 如果面试官这时候追问</span><span class="d">1:05</span></div>
+    <div class="ch" data-t="528.8"><span class="t">8:48</span><span class="n">片尾</span><span class="d">0:42</span></div>
+  </div>
+
+  <details>
+    <summary>展开逐句字幕（点击任意一句跳转播放）</summary>
+    <div id="cues"></div>
+  </details>
+
+  <footer>
+    单文件自包含播放页 · 音频以 base64 内嵌，浏览器本地解码，无需任何服务器与网络<br>
+    主源不可用时自动切同站副本（备用源不支持拖动进度）<br>
+    
+    edge-tts 合成 · 分 9 段拼接 · MD5 
+  </footer>
+</div>
+<script id="audiob64" type="text/plain"></script>
+<script id="ivEps" type="application/json">[{"ep": "e01", "no": 1, "title": "项目全景：把复杂系统讲成一个故事", "dur": "13:29", "link": "e01.html", "audio": "https://pub-127d7cde1eba4ee1a877b0c3517daa58.r2.dev/interview/e01-project-overview.mp3", "srt": "e01-project-overview.srt", "fb": "./e01-project-overview.mp3", "secs": [[0.0, "片头"], [54.72, "第一章 用一句话把系统钉住"], [213.7, "第二章 听写员的候选班底"], [364.92, "第三章 延迟是这个产品的生命线"], [506.12, "第四章 每一个出口都设了卡"], [637.58, "第五章 会话、数据与一次真实事故"], [766.9, "片尾"]]}, {"ep": "e02", "no": 8, "title": "会话管理与一次真实事故", "dur": "9:45", "link": "e02.html", "audio": "https://pub-127d7cde1eba4ee1a877b0c3517daa58.r2.dev/interview/e02-session-and-incident.mp3", "srt": "e02-session-and-incident.srt", "fb": "./e02-session-and-incident.mp3", "secs": [[0.1, "片头"], [53.79, "第一章 会话是什么，一个 I D 背后的身份"], [123.93, "第二章 那一夜，切了应用，整场空答案"], [222.27, "第三章 从现象到不变量，我是怎么定位的"], [314.31, "第四章 三层修复，以及它留下的证据"], [460.6, "第五章 如果面试官这时候追问"], [531.65, "片尾"]]}, {"ep": "e03", "no": 5, "title": "ASR 引擎选型与兜底链", "dur": "16:39", "link": "e03.html", "audio": "https://pub-127d7cde1eba4ee1a877b0c3517daa58.r2.dev/interview/e03-asr-engine-fallback.mp3", "srt": "e03-asr-engine-fallback.srt", "fb": "./e03-asr-engine-fallback.mp3", "secs": [[0.1, "片头"], [88.02, "第一章 评价引擎的三把尺子"], [210.59, "第二章 四个候选人的成绩单"], [403.95, "第三章 选谁不等于用谁"], [547.26, "第四章 切换的时候不能停服"], [660.76, "第五章 探活也要算账"], [762.0, "第六章 面试官追问预演"], [886.56, "片尾"]]}, {"ep": "e04", "no": 6, "title": "流式延迟预算", "dur": "10:15", "link": "e04.html", "audio": "https://pub-127d7cde1eba4ee1a877b0c3517daa58.r2.dev/interview/e04-latency-budget.mp3", "srt": "e04-latency-budget.srt", "fb": "./e04-latency-budget.mp3", "secs": [[0.1, "片头"], [49.14, "第一章 先把延迟拆成四段"], [151.07, "第二章 两个指标必须拆开，否则成绩会作假"], [223.23, "第三章 骨架占位，用心理感知换真实延迟"], [297.61, "第四章 垫场的三道闸，都是事故逼出来的"], [396.6, "第五章 服务端切句与播放队列"], [500.74, "第六章 如果面试官这时候追问"], [571.84, "片尾"]]}, {"ep": "e05", "no": 4, "title": "回声自激与半双工门控", "dur": "8:20", "link": "e05.html", "audio": "https://pub-127d7cde1eba4ee1a877b0c3517daa58.r2.dev/interview/e05-echo-gate.mp3", "srt": "e05-echo-gate.srt", "fb": "./e05-echo-gate.mp3", "secs": [[0.0, "片头"], [42.56, "第一章 自激是怎么形成的"], [104.16, "第二章 半双工门控，最笨也最可靠"], [170.88, "第三章 判据之争，为什么是杰卡德不是覆盖率"], [254.03, "第四章 碎尾与打断，两个后来补的洞"], [334.89, "第五章 布局打分，能不能开让数字说话"], [396.72, "第六章 如果面试官这时候追问"], [464.05, "片尾"]]}, {"ep": "e06", "no": 9, "title": "出口守卫与防御性设计", "dur": "9:31", "link": "e06.html", "audio": "https://pub-127d7cde1eba4ee1a877b0c3517daa58.r2.dev/interview/e06-answer-guard.mp3", "srt": "e06-answer-guard.srt", "fb": "./e06-answer-guard.mp3", "secs": [[0.1, "片头"], [42.4, "第一章 为什么出口需要守卫"], [107.92, "第二章 A 一，元话语拦截"], [163.68, "第三章 A 四，篇幅收口与那次星号事故"], [266.92, "第四章 什么时候不该答"], [350.97, "第五章 A 七，被打断之后"], [395.6, "第六章 协议增量与可观测性"], [463.28, "第七章 如果面试官这时候追问"], [528.81, "片尾"]]}, {"ep": "e07", "no": 7, "title": "RAG 与知识库治理", "dur": "8:23", "link": "e07.html", "audio": "https://pub-127d7cde1eba4ee1a877b0c3517daa58.r2.dev/interview/e07-rag-governance.mp3", "srt": "e07-rag-governance.srt", "fb": "./e07-rag-governance.mp3", "secs": [[0.1, "片头"], [33.95, "第一章 知识库曾经长期静默失效"], [96.85, "第二章 冷与热的差距有多大"], [161.45, "第三章 唯一可见的信号"], [217.84, "第四章 迁移与那些看不见的孤儿"], [294.31, "第五章 外部依赖怎么治理"], [354.94, "第六章 清洗铁律"], [402.06, "第七章 如果面试官这时候追问"], [461.18, "片尾"]]}, {"ep": "e08", "no": 2, "title": "浏览器音频采集与双通道分离", "dur": "6:44", "link": "e08.html", "audio": "https://pub-127d7cde1eba4ee1a877b0c3517daa58.r2.dev/interview/e08-audio-capture.mp3", "srt": "e08-audio-capture.srt", "fb": "./e08-audio-capture.mp3", "secs": [[0.1, "片头"], [32.3, "第一章 两路声音，两个通道"], [90.31, "第二章 为什么不用声纹"], [151.35, "第三章 协议设计，源无关"], [211.09, "第四章 半双工门控与它的代价"], [262.75, "第五章 一个结构性的无奈"], [308.33, "第六章 如果面试官这时候追问"], [363.66, "片尾"]]}, {"ep": "e09", "no": 3, "title": "VAD 断句与音频秒", "dur": "7:12", "link": "e09.html", "audio": "https://pub-127d7cde1eba4ee1a877b0c3517daa58.r2.dev/interview/e09-vad-segment.mp3", "srt": "e09-vad-segment.srt", "fb": "./e09-vad-segment.mp3", "secs": [[0.1, "片头"], [29.65, "第一章 断句到底在断什么"], [95.78, "第二章 那个跟时间有关的坑"], [164.0, "第三章 碎片治理，一声咔哒的教训"], [223.48, "第四章 打断，以及它的两条判据"], [278.56, "第五章 标定，让数字替你做决定"], [330.6, "第六章 如果面试官这时候追问"], [392.87, "片尾"]]}, {"ep": "e10", "no": 10, "title": "数据分层、观测与隐私", "dur": "7:28", "link": "e10.html", "audio": "https://pub-127d7cde1eba4ee1a877b0c3517daa58.r2.dev/interview/e10-data-and-privacy.mp3", "srt": "e10-data-and-privacy.srt", "fb": "./e10-data-and-privacy.mp3", "secs": [[0.1, "片头"], [26.96, "第一章 三层数据，各层的规矩不同"], [94.36, "第二章 清洗的两条铁律"], [163.3, "第三章 观测，每一轮一行"], [221.65, "第四章 隐私，默认少暴露"], [292.68, "第五章 自动化与保留期"], [336.41, "第六章 如果面试官这时候追问"], [405.33, "片尾"]]}]</script>
+<script>
+(function () {
+  var au = document.getElementById('au');
+  var live = document.getElementById('live');
+  var EPS = [];
+  try { EPS = JSON.parse(document.getElementById('ivEps').textContent || '[]'); } catch (e) { EPS = []; }
+  var CUR = "e06";
+  var BGM = [{"file": "bgm-woodfish-01.wav", "label": "01"}, {"file": "bgm-woodfish-03.wav", "label": "03"}, {"file": "bgm-woodfish-06.wav", "label": "06"}];                    // [{file,label}] —— 素材缺失时为空数组，整块控件隐藏
+  var BGM_DEFAULT = "bgm-woodfish-01.wav";
+  var LS = { mode: 'iv:mode', bgm: 'iv:bgm', vol: 'iv:bgmvol',
+             snd: 'iv:bgmsnd', rate: 'iv:rate', last: 'iv:last' };
+
+  function lsGet(k, d) {
+    try { var v = localStorage.getItem(k); return (v === null || v === '') ? d : v; }
+    catch (e) { return d; }
+  }
+  function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  function fmt(s) {
+    s = Math.max(0, s);
+    var m = Math.floor(s / 60), r = Math.floor(s % 60);
+    return m + ':' + (r < 10 ? '0' : '') + r;
+  }
+  function epIndex(ep) {
+    for (var i = 0; i < EPS.length; i++) { if (EPS[i].ep === ep) return i; }
+    return -1;
+  }
+  var cur = epIndex(CUR);
+
+  // ---- 播完后：三选一（末集隐藏「自动下一期」）----
+  var mode = lsGet(LS.mode, 'none');
+  if (['loop', 'next', 'none'].indexOf(mode) < 0) mode = 'none';
+  var modeBox = document.getElementById('ivMode');
+  function paintMode() {
+    var bs = modeBox ? modeBox.querySelectorAll('button') : [];
+    for (var i = 0; i < bs.length; i++) bs[i].classList.toggle('on', bs[i].dataset.m === mode);
+  }
+  if (modeBox) {
+    if (cur < 0 || cur >= EPS.length - 1) {
+      var nb = modeBox.querySelector('[data-m="next"]');
+      if (nb) nb.style.display = 'none';
+      if (mode === 'next') mode = 'none';
+    }
+    paintMode();
+    modeBox.addEventListener('click', function (ev) {
+      var b = ev.target.closest ? ev.target.closest('button') : null;
+      if (!b || !b.dataset.m) return;
+      mode = b.dataset.m; lsSet(LS.mode, mode); paintMode();
+    });
+  }
+
+  // ---- 配乐「敲敲鱼」：默认开（仅状态），只在手势里真正出声 ----
+  var bgmWrap = document.getElementById('bgmWrap');
+  var bgmBtn = document.getElementById('bgmBtn');
+  var bgmVol = document.getElementById('bgmVol');
+  var bgmSnd = document.getElementById('bgmSnd');
+  var bgmAu = document.getElementById('ivBgmAu');
+  var on = lsGet(LS.bgm, '1') === '1';
+  var snd = lsGet(LS.snd, BGM_DEFAULT);
+  // 存过的音色若已不在选项里（素材改名/增删）自动回落，绝不静音
+  if (!BGM.some(function (b) { return b.file === snd; })) snd = BGM.length ? BGM[0].file : '';
+
+  function vol() { return Math.max(0, Math.min(1, (parseInt(lsGet(LS.vol, '35'), 10) || 0) / 100)); }
+  function paintBgm() {
+    bgmBtn.classList.toggle('on', on);
+    bgmBtn.textContent = on ? '♪ 敲敲鱼 开' : '♪ 敲敲鱼 关';
+    if (bgmSnd) {
+      var bs = bgmSnd.querySelectorAll('button');
+      for (var i = 0; i < bs.length; i++) bs[i].classList.toggle('on', bs[i].dataset.s === snd);
+    }
+    if (bgmAu) bgmAu.volume = vol();
+  }
+  function startBgm() {
+    if (!on || !bgmAu) return false;
+    if (!bgmAu.paused) return true;           // 幂等闸门：已在播则什么都不做
+    var p = bgmAu.play();
+    if (p && p.catch) p.catch(function () {});
+    return true;
+  }
+  function stopBgm() { if (bgmAu) bgmAu.pause(); }
+  function tryStart() {
+    if (startBgm()) {
+      au.removeEventListener('play', tryStart);
+      document.removeEventListener('click', tryStart);
+      document.removeEventListener('touchstart', tryStart);
+    }
+  }
+  if (bgmAu && BGM.length) {
+    bgmWrap.style.display = 'inline-flex';
+    if (bgmAu.getAttribute('src') !== snd) bgmAu.setAttribute('src', snd);
+    bgmVol.value = String(Math.round(vol() * 100));
+    paintBgm();
+    bgmBtn.onclick = function () {
+      on = !on; lsSet(LS.bgm, on ? '1' : '0'); paintBgm();
+      if (on) startBgm(); else stopBgm();
+    };
+    bgmVol.oninput = function () { lsSet(LS.vol, bgmVol.value); if (bgmAu) bgmAu.volume = vol(); };
+    if (bgmSnd) bgmSnd.addEventListener('click', function (ev) {
+      var b = ev.target.closest ? ev.target.closest('button') : null;
+      if (!b || !b.dataset.s) return;
+      snd = b.dataset.s; lsSet(LS.snd, snd);
+      var wasPlaying = bgmAu && !bgmAu.paused;
+      bgmAu.setAttribute('src', snd); bgmAu.load(); paintBgm();
+      if (wasPlaying) { var p = bgmAu.play(); if (p && p.catch) p.catch(function () {}); }
+    });
+    au.addEventListener('play', tryStart);       // 手势 ①：主音轨一播放
+    document.addEventListener('click', tryStart); // 手势 ②：页面任意点击
+    document.addEventListener('touchstart', tryStart);
+  }
+
+  // ---- Media Session：锁屏 / 线控 / 键盘媒体键（250ms 去抖防重入）----
+  var lastMs = 0;
+  function deb() { var n = Date.now(); if (n - lastMs < 250) return false; lastMs = n; return true; }
+  function msMeta(i) {
+    if (!('mediaSession' in navigator)) return;
+    var e = EPS[i] || {};
+    try {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: e.title || document.title,
+        artist: '面试 ASR 助手',
+        album: '知识点精讲 · ' + String(e.ep || '').toUpperCase()
+      });
+    } catch (err) {}
+  }
+  if ('mediaSession' in navigator) {
+    ['play', 'pause', 'stop', 'previoustrack', 'nexttrack', 'seekbackward', 'seekforward']
+      .forEach(function (a) {
+        try {
+          navigator.mediaSession.setActionHandler(a, function () {
+            if (a === 'play') { var p = au.play(); if (p && p.catch) p.catch(function () {}); startBgm(); }
+            else if (a === 'pause' || a === 'stop') { au.pause(); stopBgm(); }
+            else if (a === 'nexttrack') { if (!deb()) return; go(1); }
+            else if (a === 'previoustrack') { if (!deb()) return; go(-1); }
+            else if (a === 'seekbackward') seek(Math.max(0, au.currentTime - 15));
+            else if (a === 'seekforward') seek(Math.min((au.duration || 0) - 1, au.currentTime + 30));
+          });
+        } catch (err) {}
+      });
+    ['play', 'pause', 'ended', 'loadedmetadata'].forEach(function (ev) {
+      au.addEventListener(ev, function () {
+        try { navigator.mediaSession.playbackState = au.paused ? 'paused' : 'playing'; } catch (e) {}
+      });
+    });
+  }
+
+  // ---- 跨集导航：一律页内接续（跳页会丢 sticky activation，自动播放会被拦）----
+  function go(delta) {
+    var t = cur + delta;
+    if (t < 0) { seek(0); return; }
+    if (t >= EPS.length) return;
+    loadEp(t, true, true);
+  }
+  var prevBtn = document.getElementById('prevBtn');
+  var nextBtn = document.getElementById('nextBtn');
+  if (cur <= 0) prevBtn.disabled = true;
+  if (cur < 0 || cur >= EPS.length - 1) nextBtn.disabled = true;
+  prevBtn.onclick = function () { go(-1); };
+  nextBtn.onclick = function () { go(1); };
+  if (CUR) lsSet(LS.last, CUR);
+
+  // ---- 倍速：循环档位，记忆 ----
+  var RATES = [1, 1.25, 1.5, 2, 0.75];
+  var rateBtn = document.getElementById('rateBtn');
+  var curRate = parseFloat(lsGet(LS.rate, '1')) || 1;
+  function paintRate() {
+    rateBtn.textContent = curRate.toFixed(2).replace(/0$/, '').replace(/\.$/, '') + '×';
+    au.playbackRate = curRate;
+  }
+  au.playbackRate = curRate;
+  paintRate();
+  rateBtn.onclick = function () {
+    var i = RATES.indexOf(curRate);
+    curRate = RATES[(i + 1) % RATES.length];
+    paintRate(); lsSet(LS.rate, String(curRate));
+  };
+
+  au.addEventListener('ended', function () {
+    var cont = false;
+    if (mode === 'loop') {
+      seek(0);
+      var p = au.play(); if (p && p.catch) p.catch(function () {});
+      cont = true;
+    } else if (mode === 'next' && EPS[cur + 1]) {
+      cont = loadEp(cur + 1, true, true);
+      if (cont) startBgm();                 // 切集补一次（幂等）
+    }
+    if (!cont) stopBgm();                   // 播客播放结束 → 停背景层
+  });
+
+  var SUBS_INIT = [[0.1,4.84,"前面几期讲的都是怎么让系统听清、答快、不自激。"],[4.79,10.96,"这一期讲一个更根本的问题，模型生成的内容，凭什么敢直接播出去。"],[10.96,14.44,"我们在这个项目里的答案是，不凭什么。"],[14.44,19.25,"每一条要出声的文本，都要先过一组设在出口上的卡。"],[19.25,24.43,"这些卡不是prompt 调优调出来的，是一次次真实事故堆出来的。"],[24.43,31.13,"它们的名字很朴素，就叫出口守卫，编号从 A 一排到 A 八，外加几个后来补的补丁号。"],[31.13,41.43,"这期你会听到六道卡，每一道对应一类具体的失败，以及它们背后那句共同的设计原则，宁可少答一次，也不愿意答错一次。"],[42.4,45.15,"先看三类真实发生过的失败。"],[45.1,47.02,"第一类叫元话语。"],[47.02,55.37,"模型有时候会把自己的思考过程或者提示词里的指令当成答案吐出来，比如「你可以这么答」「以下是参考答案」。"],[55.37,62.61,"这种内容一旦被语音播出去，等于当场自证是机器在代答，后果比答错严重得多。"],[62.61,64.72,"第二类叫篇幅失控。"],[64.72,73.97,"实测里出现过单条答案四百四十九到五百五十五个字，播讲需要五十六到七十九秒，直接吃掉下一题的时间预算。"],[73.97,77.27,"面试官还在等，你已经把时间用完了。"],[77.27,79.48,"第三类叫答非所问。"],[79.48,90.65,"平台自己说的话被当成提问，比如系统提示「好像没有听到您的声音，您还在吗」，我们把它送进模型，模型认真地回了一句「抱歉，我遇到了技术问题」。"],[90.65,95.72,"实测十六段这样的平台自述里，有七段触发了这种废答案。"],[95.72,102.27,"注意这三类失败的共同点，它们都不是模型能力不够，而是模型太听话了。"],[102.27,106.97,"你给它什么它就答什么，它不知道有些东西不该答。"],[107.92,110.88,"第一道卡叫 A 一，专门治元话语。"],[110.83,113.57,"它的实现有个巧妙的地方。"],[113.57,126.58,"答案的前二十四个字先攒着不播，攒够之后判一次，如果命中元话语的特征，就整条丢弃，一个字都不出声，同时给用户发一条提示，然后自动重试一次。"],[126.58,134.76,"为什么要攒二十四个字，因为元话语几乎都出现在开头，而二十四字以内的语音延迟人感觉不到。"],[134.76,139.66,"判据里有一条很生活化的规则，我们专门识别助教口吻。"],[139.66,151.91,"比如「你可以这么理解」「建议这样回答」，这些句式在聊天场景里很友好，但在面试场景里是致命的，它会让对面的评分系统立刻识别出这是提示词在说话。"],[151.91,157.05,"这里的设计原则是，宁可晚一点出声，也不要先出声再撤回。"],[157.05,162.73,"声音一旦播出就收不回来，所以预判的价值远大于事后补救。"],[163.68,166.3,"第二道卡是 A 四，管篇幅。"],[166.25,168.87,"先说数字是怎么定下来的。"],[168.87,177.97,"客户端那边有三十秒的播放上限，我们实测的播讲语速是每秒四点九一个字，三十秒只放得下一百四十七个字。"],[177.97,187.22,"也就是说，如果你允许答案写到四百八十字，最终只有大约三成能出声，剩下的三成是用户永远听不到的部分。"],[187.22,192.88,"基于这个算术，我们把默认上限定在二百二十字，而不是拍脑袋。"],[192.88,194.64,"但它不是一刀切。"],[194.64,208.61,"如果问句里写了「请用 N 分钟陈述」，上限按 N 乘二百放宽；如果是很短的问题，比如「讲讲你的角色」，上限反而收紧到一百五十字，因为短问题配长答案会显得答非所问。"],[208.61,211.44,"更关键的是到顶之后怎么办。"],[211.44,222.0,"最早的实现是到顶直接切字符，结果答案经常被砍在半句上，真实反馈里有一句话我记得很清楚，叫内容缺失、表述断句。"],[222.0,235.22,"我们改成到顶就停止读流，然后回退到最后一个完整句，优先找句末标点，找不到就找软断点，再不行才硬截，同时下发一条收口事件告诉前端预计时长和原因。"],[235.22,238.9,"还有一次更小的但印象极深的事故。"],[238.9,248.33,"答案里出现了两个星号，那是模型输出的加粗标记，语音合成把它老老实实念成了「星号」两个字，直接进了正式成绩。"],[248.33,257.07,"从那以后我们在输出链路上加了一层清理，专门去掉星号、井号、行首编号这些不该被念出来的符号。"],[257.07,262.01,"这一章的教训是，出口守卫不只管语义，还要管渲染。"],[262.01,265.96,"凡是会被念出来的东西，都是你的责任。"],[266.92,272.05,"后面几道卡管的不是怎么答，而是什么时候根本不该答。"],[272.0,274.06,"A 五管进房静默窗。"],[274.06,281.15,"面试刚开始的二十五秒里，平台正在播报规则、确认设备，这些话不该触发作答。"],[281.15,289.54,"我们设了一个静默窗，窗内不触发，但窗内如果真的有实质提问，会在窗结束时补答一次，既不漏也不抢。"],[289.54,292.09,"A 六管结束语和纯安抚语。"],[292.09,297.03,"像「好的，今天的面试就到这里」「您先喝口水」这类，不作答。"],[297.03,299.18,"A 六 B 管过短碎片。"],[299.18,307.48,"识别引擎有时会吐出「执行」「等一下」「都准备好」这种三五个字的碎片，它们每个都会消耗一整轮问答。"],[307.48,313.55,"我们设了最小触发长度，默认八字，低于这个长度不作答，只提示并记录。"],[313.55,322.49,"这里有个刻意的设计，这条规则只拦自动触发，用户手动点重发不受影响，因为人的意图不能靠长度猜。"],[322.49,327.14,"A 八管平台侧的元问题，也就是前面说的那七段废答案。"],[327.14,337.31,"它的判定是三道闸，文本超过四十字直接放行，因为真正的提问不会这么长；命中词表就拦；如果包含业务实词也放行。"],[337.31,350.02,"这里有个反直觉的决定，我们刻意不做疑问特征豁免，因为统计下来九十六条命中里有八十二条带「吗」字，如果因为带疑问词就放行，这道闸门基本等于没装。"],[350.97,355.34,"还有一道卡叫 A 七，它管的是一个很人性的场景。"],[355.29,359.19,"面试官中途插话，我们的答案流被中断了。"],[359.19,369.13,"这时候系统有两种选择，一种是就此结束，把半截答案留在屏幕上，另一种是等对面说完，自动把这一题重新答一次。"],[369.13,374.92,"我们选了后者，但只重答一次，而且只在确实被打断的情况下触发。"],[374.92,381.78,"为什么只重答一次，因为重答是有成本的，它会消耗时间预算，也会让用户困惑。"],[381.78,384.64,"一次是补救，两次是骚扰。"],[384.64,394.64,"这道卡背后的原则是，被打断不是错误，是正常交互，系统要能优雅地恢复到「可以继续」的状态，而不是停在半路。"],[395.6,399.85,"讲了六道卡，最后讲它们怎么被验证和观测。"],[399.8,415.41,"所有守卫动作都会产生一条事件，原因字段有固定的取值，比如元话语拦截、跳过作答、答案被截断、回声被抑制、进房补答，前端据此显示不同的提示，落盘时也是独立的记录类型。"],[415.41,423.19,"为什么要这么设计，因为守卫一旦悄悄生效，你就分不清「系统没答」到底是守卫拦了还是链路断了。"],[423.19,424.84,"测试分两层。"],[424.84,439.4,"一层是纯逻辑，二十三条用例覆盖元话语、非提问、篇幅判定，秒级就能跑完，不需要起服务；另一层用假的模型流验证整条链路，十三条用例覆盖拦截、截断、重答。"],[439.4,444.08,"加上原有的九十八条回归，全绿才算改动可以上线。"],[444.08,449.33,"这里有个观点我想强调，守卫本身也是代码，也会写错。"],[449.33,462.34,"所以守卫必须有自己的测试，而且测试里要包含反例，比如那些复用我方术语的真追问，防止后人为了降低误杀率把判据改松，最后把真正的提问也吞掉。"],[463.28,468.23,"第一个追问，为什么不直接在提示词里写「不要说这些」来替代守卫。"],[468.18,471.49,"因为提示词是建议，守卫是法律。"],[471.49,477.65,"模型会遵守提示词的大多数时候，但只需要一次不遵守，事故就发生了。"],[477.65,482.26,"在会被播出去的链路上，你必须假设上游会犯错。"],[482.26,486.68,"第二个追问，这么多守卫会不会让系统变得迟钝。"],[486.68,494.64,"会有一点，我们用一个数字换安心，前二十四字的预缓冲大约零点几秒，换掉的是自证风险。"],[494.64,496.48,"这笔账很清楚。"],[496.48,501.3,"第三个追问，守卫的开关为什么默认打开又允许关闭。"],[501.3,509.25,"因为真实场景千差万别，我们给的是经过实测的默认值和明确的关闭方式，而不是替用户决定。"],[509.25,512.27,"但默认值一定是保守的那一侧。"],[512.27,516.43,"第四个追问，这套东西能不能迁移到别的场景。"],[516.43,517.25,"能。"],[517.25,527.87,"把它抽象成一句话，凡是模型输出会被第三方消费的链路，都要在出口设卡，卡的判据来自真实事故，卡的动作要可观测。"],[528.81,531.15,"这一期留给你的四句话。"],[531.1,536.21,"第一，模型太听话本身就是风险，它不知道什么不该答。"],[536.21,541.56,"第二，凡是会被念出来的东西都是你的责任，包括那两个星号。"],[541.56,547.95,"第三，到顶就停，回退到完整句，短半句是取舍，断半截是事故。"],[547.95,553.4,"第四，守卫必须有自己的测试和反例，否则它会被人改松。"],[553.4,567.17,"下一期我们往回走一步，讲检索那一侧，知识库为什么曾经长期静默失效，冷态九秒到稳态零点零九秒是怎么测出来的，以及清洗数据时那条不能碰的铁律。"],[567.17,570.91,"我是这个项目的作者，谢谢你听到这里。"]];
+  var CH_INIT = [[0.1, "片头"], [42.4, "第一章 为什么出口需要守卫"], [107.92, "第二章 A 一，元话语拦截"], [163.68, "第三章 A 四，篇幅收口与那次星号事故"], [266.92, "第四章 什么时候不该答"], [350.97, "第五章 A 七，被打断之后"], [395.6, "第六章 协议增量与可观测性"], [463.28, "第七章 如果面试官这时候追问"], [528.81, "片尾"]];
+  var cuesBox = document.getElementById('cues');
+  var chBox = document.getElementById('chapters');
+  var SUBS = [], CHAPTERS = [], cueEls = [], curCue = -1;
+
+  function toSec(ts) {
+    var p = String(ts).trim().split(':'), s = p[2].split(',');
+    return parseInt(p[0], 10) * 3600 + parseInt(p[1], 10) * 60 +
+           parseInt(s[0], 10) + parseInt(s[1], 10) / 1000;
+  }
+  function parseSrt(text) {
+    var out = [], blocks = String(text || '').replace(/\r/g, '').split(/\n\s*\n/);
+    for (var i = 0; i < blocks.length; i++) {
+      var lines = blocks[i].split('\n').filter(function (l) { return l.trim(); });
+      if (lines.length < 2 || lines[1].indexOf('-->') < 0) continue;
+      var ab = lines[1].split('-->');
+      var t = lines.slice(2).join('').trim();
+      if (t) out.push([Math.round(toSec(ab[0]) * 100) / 100,
+                       Math.round(toSec(ab[1]) * 100) / 100, t]);
+    }
+    return out;
+  }
+  // 元数据没加载时给 currentTime 赋值会被静默丢弃，统一走 seek()
+  function seek(t) {
+    if (au.readyState >= 1) { try { au.currentTime = t; } catch (e) {} return; }
+    au.addEventListener('loadedmetadata', function () {
+      try { au.currentTime = t; } catch (e) {}
+    }, { once: true });
+  }
+  function playQuiet() { var p = au.play(); if (p && p.catch) p.catch(function () {}); }
+
+  function applySubs(subs) {
+    SUBS = subs || [];
+    curCue = -1;
+    cueEls = SUBS.map(function (c) {
+      var d = document.createElement('div');
+      d.className = 'cue';
+      d.innerHTML = '<span class="ct">' + fmt(c[0]) + '</span>' + c[2];
+      d.onclick = function () { seek(c[0] + 0.01); playQuiet(); };
+      return d;
+    });
+    cuesBox.innerHTML = '';
+    cueEls.forEach(function (d) { cuesBox.appendChild(d); });
+  }
+  function applyChapters(secs) {
+    CHAPTERS = [];
+    chBox.innerHTML = '';
+    (secs || []).forEach(function (c) {
+      var d = document.createElement('div');
+      d.className = 'ch';
+      d.setAttribute('data-t', c[0]);
+      d.innerHTML = '<span class="t">' + fmt(c[0]) + '</span><span class="n">' + c[1] + '</span>';
+      d.addEventListener('click', function () { seek(parseFloat(c[0])); playQuiet(); });
+      chBox.appendChild(d);
+      CHAPTERS.push({ t: parseFloat(c[0]), el: d });
+    });
+  }
+
+  // ---- 页内接续：不离开当前文档，激活态保留 → 自动播放不会被拦 ----
+  function loadEp(i, autoplay, push) {
+    var e = EPS[i];
+    if (!e) return false;
+    cur = i;
+    var h1 = document.querySelector('h1');
+    if (h1) h1.textContent = String(e.ep).toUpperCase() + ' · ' + e.title;
+    var mt = document.querySelector('.meta b');
+    if (mt && e.dur) mt.textContent = e.dur;
+    document.title = (e.ep ? String(e.ep).toUpperCase() + ' · ' : '') + e.title;
+    applyChapters(e.secs || []);
+    au.src = e.audio;
+    armFb(e.fb || '');
+    if (e.srt) {
+      // 字幕与页面同在 R2 同源目录，fetch 不受 CORS 限制
+      fetch(e.srt, { cache: 'force-cache' }).then(function (r) { return r.text(); })
+        .then(function (t) { if (EPS[cur] === e) applySubs(parseSrt(t)); })
+        .catch(function () {});
+    } else {
+      applySubs([]);
+    }
+    if (push && history.pushState) history.pushState({ ep: e.ep }, '', e.link);
+    lsSet(LS.last, e.ep);
+    msMeta(i);
+    if (autoplay) { playQuiet(); startBgm(); }
+    return true;
+  }
+  window.addEventListener('popstate', function () {
+    var m = /(e\d+)\.html/.exec(location.pathname) || /(e\d+)\.html/.exec(location.href);
+    if (!m) return;
+    var i = epIndex(m[1]);
+    if (i >= 0 && i !== cur) loadEp(i, false, false);
+  });
+
+  applyChapters(CH_INIT);
+  applySubs(SUBS_INIT);
+
+  // 同步：当前字幕 + 当前章节高亮
+  au.addEventListener('timeupdate', function () {
+    var cur2 = au.currentTime, i;
+    for (i = 0; i < SUBS.length; i++) {
+      if (cur2 >= SUBS[i][0] && cur2 < SUBS[i][1]) break;
+    }
+    var idx = i < SUBS.length ? i : -1;
+    if (idx !== curCue) {
+      if (curCue >= 0) { cueEls[curCue].classList.remove('on'); }
+      if (idx >= 0) {
+        cueEls[idx].classList.add('on');
+        live.textContent = SUBS[idx][2];
+        var det = document.querySelector('details');
+        if (det && det.open) cueEls[idx].scrollIntoView({ block: 'nearest' });
+      }
+      curCue = idx;
+    }
+    var active = null;
+    for (i = 0; i < CHAPTERS.length; i++) {
+      if (cur2 >= CHAPTERS[i].t) active = CHAPTERS[i].el;
+    }
+    CHAPTERS.forEach(function (c) {
+      c.el.style.background = c.el === active ? '#12101f' : '';
+      c.el.style.borderColor = c.el === active ? '#7c3aed66' : 'transparent';
+    });
+  });
+  // 解码内嵌 base64 → Blob URL（--audio-url 模式直接走外链，不内嵌）
+  var SRC = "https://pub-127d7cde1eba4ee1a877b0c3517daa58.r2.dev/interview/e06-answer-guard.mp3";
+  var blobUrl = "";
+  if (SRC) {
+    au.src = SRC;
+    live.textContent = '已就绪 · 外链音频 · 建议戴耳机';
+  } else {
+    var b64 = document.getElementById('audiob64').textContent.replace(/[\s\uFEFF]+/g, '');
+    var bin, bytes;
+    try { bin = atob(b64); } catch (e) { live.textContent = '音频解码失败'; return; }
+    bytes = new Uint8Array(bin.length);
+    for (var j = 0; j < bin.length; j++) bytes[j] = bin.charCodeAt(j);
+    blobUrl = URL.createObjectURL(new Blob([bytes], { type: 'audio/mpeg' }));
+    au.src = blobUrl;
+    live.textContent = '已就绪 · ' + (bytes.length / 1048576).toFixed(1) + ' MB · 建议戴耳机';
+  }
+
+  // ---- 双源回退：主源（R2，支持 Range）失败或 8s 未出元数据 → 切同源副本 ----
+  // 同站副本在 R2 站与 Pages 站都存在（同一相对路径），所以这段代码两边通用。
+  var FB = "./e06-answer-guard.mp3";
+  var fbUsed = false, fbTimer = null;
+  function useFallback() {
+    if (fbUsed || !FB) return;
+    fbUsed = true;
+    if (fbTimer) { clearTimeout(fbTimer); fbTimer = null; }
+    try { au.src = FB; au.load(); } catch (e) {}
+    live.textContent = '已切到备用源（同站副本）· 进度拖动不可用';
+  }
+  function armFb(url) {
+    if (fbTimer) { clearTimeout(fbTimer); fbTimer = null; }
+    FB = url || '';
+    fbUsed = false;
+    if (!FB) return;
+    fbTimer = setTimeout(function () { if (au.readyState < 1) useFallback(); }, 8000);
+  }
+  if (SRC && FB) {
+    au.addEventListener('error', useFallback);
+    au.addEventListener('loadedmetadata', function () {
+      if (fbTimer) { clearTimeout(fbTimer); fbTimer = null; }
+    }, { once: true });
+    armFb(FB);
+  }
+
+  document.getElementById('dl').onclick = function () {
+    if (SRC) { window.open(SRC, '_blank'); return; }
+    var a = document.createElement('a');
+    a.href = blobUrl; a.download = 'answer-guard-播客.mp3';
+    document.body.appendChild(a); a.click(); a.remove();
+  };
+  document.getElementById('dlsrt').onclick = function () {
+    var out = SUBS.map(function (c, i) {
+      function ts(t) {
+        var h = Math.floor(t / 3600), m = Math.floor(t % 3600 / 60), s = Math.floor(t % 60);
+        var ms = Math.round((t - Math.floor(t)) * 1000);
+        return (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m + ':' +
+               (s < 10 ? '0' : '') + s + ',' + (ms < 10 ? '00' : ms < 100 ? '0' + ms : ms);
+      }
+      return (i + 1) + '\n' + ts(c[0]) + ' --> ' + ts(c[1]) + '\n' + c[2] + '\n';
+    }).join('\n');
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([out], { type: 'text/plain' }));
+    a.download = 'answer-guard-播客.srt';
+    document.body.appendChild(a); a.click(); a.remove();
+  };
+})();
+</script>
+</body>
+</html>
